@@ -12,11 +12,12 @@ from bson.codec_options import CodecOptions
 
 
 
-TOKEN = "a"
+TOKEN = os.getenv("DISCORD_BOT_TOKEN")
+MONGODB_URI = os.getenv("MONGODB_URI")
 
 prefix = "."
 bot = commands.Bot(command_prefix=prefix)
-mongo = pymongo.MongoClient("mongodb://localhost:27017")
+mongo = pymongo.MongoClient(MONGODB_URI)
 mydb = mongo["marbles"]
 collection = mydb["marbleUsers"]
 bot.remove_command("help")
