@@ -12,7 +12,7 @@ from bson.codec_options import CodecOptions
 
 
 
-TOKEN = ""
+TOKEN = "a"
 
 prefix = "."
 bot = commands.Bot(command_prefix=prefix)
