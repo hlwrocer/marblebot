@@ -224,13 +224,26 @@ async def gamble(ctx, numMarbles, multiplier):
 async def top(ctx):
     users = ''
     numMarbles = ''
-    records = collection.find().sort("marbles",-1)
+    records = collection.find().sort("marbles", -1)
     count = records.count() if records.count() < 10 else 10
+    #for some reason the below duplicates a document
+    '''
     for x in range(count):
         username = await bot.fetch_user(records[x]['userID'])
+        print(x, records[x]['userID'], username)
         marbleCount = records[x]['marbles']
         users += f"{x+1}. {username}" + "\n"
         numMarbles += f"{marbleCount}" + "\n"
+    '''
+    pos = 0
+    for doc in records:
+        username = await bot.fetch_user(doc['userID'])
+        marbleCount = doc['marbles']
+        users += f"{pos+1}. {username}" + "\n"
+        numMarbles += f"{marbleCount}" + "\n"
+        pos+=1
+        if pos == count:
+            break
 
     em = discord.Embed(title = "Marble leaderboard", color=ctx.author.color)
     em.set_thumbnail(url=bot.user.avatar_url)
