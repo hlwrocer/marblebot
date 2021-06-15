@@ -275,11 +275,12 @@ async def race(ctx):
             await asyncio.sleep(1)
 
     def check(reaction, user):
+        username = user.name + "#" + user.discriminator
         if reaction.emoji == "🏁" and user.id == ctx.author.id:
             return True
         elif reaction.emoji == "✅":
-            if isRegistered(user.id):
-                playerList.append(user.name + "#" + user.discriminator)
+            if isRegistered(user.id) and username not in playerList:
+                playerList.append(username)
         elif reaction.emoji == "❎" and user.id == ctx.author.id:
             canceled = True
             return True
@@ -355,17 +356,6 @@ def raceEmbed(playerList, racePositions, marbles, countdown):
         em.add_field(name = "Position", value = positions, inline=True)
 
     return em
-
-@bot.event
-async def on_reaction_add(reaction, user):
-    print(reaction)
-
-
-
-
-    
-
-
 
 @bot.group(invoke_without_command=True)
 async def help(ctx):
