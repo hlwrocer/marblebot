@@ -5,10 +5,12 @@ import pymongo
 import re
 import random
 import asyncio
+import time
 from discord.ext import commands
 from datetime import datetime
 from pytz import timezone
 from bson.codec_options import CodecOptions
+from threading import Timer
 
 
 
@@ -197,7 +199,7 @@ async def gamble(ctx, numMarbles, multiplier):
     number = random.randint(1, multiplier)
     try:
         while True:
-            msg = await bot.wait_for('message', check=check, timeout=60.0)
+            msg = asyncio.ensure_future(bot.wait_for('message', check=check, timeout=60.0))
             if msg.content == 'quit':
                 role = getRole(ctx.guild, "marble-bois")
                 await ctx.send(f"Hey {role.mention}, {ctx.author.mention} weenied out lmao. Taking a marble for that")
@@ -251,6 +253,114 @@ async def top(ctx):
     em.add_field(name = "Marbles", value=numMarbles, inline=True)
     
     await ctx.send(embed=em)
+
+@bot.command(name="race")
+async def race(ctx):
+    playerList = []
+    marbles = ["⚫", "🔵", "🟤", "🟢", "🟠", "🟣", "🔴", "🟡"]
+    random.shuffle(marbles)
+    emojis = ["✅","🏁","❎"]
+    message = await ctx.send(embed = raceLobbyEmbed(playerList , 30))
+    for emoji in emojis:
+        await message.add_reaction(emoji)
+    end = time.time() + 30
+    timeOut = False
+    canceled = False
+
+    async def coro1():
+        for x in range(0, 30, 1):
+            if timeOut:
+                break
+            await message.edit(embed=raceLobbyEmbed(playerList, 30-x))
+            await asyncio.sleep(1)
+
+    def check(reaction, user):
+        if reaction.emoji == "🏁" and user.id == ctx.author.id:
+            return True
+        elif reaction.emoji == "✅":
+            if isRegistered(user.id):
+                playerList.append(user.name + "#" + user.discriminator)
+        elif reaction.emoji == "❎" and user.id == ctx.author.id:
+            canceled = True
+            return True
+        return False
+ 
+    await asyncio.wait([coro1(), bot.wait_for('reaction_add', check=check)], return_when=asyncio.FIRST_COMPLETED)
+    timeOut = True
+    if len(playerList) == 0 or canceled:
+        await message.edit(embed=discord.Embed(Title = "Marble Race", description = "The race has been canceled"))
+        return
+    await message.clear_reaction("✅")
+    await message.clear_reaction("🏁")
+    await message.clear_reaction("❎")
+    
+    raceFinished = False
+    countdown = 3
+    racePositions = [0]*len(playerList)
+    winners = []
+
+    
+    while not raceFinished:
+        await message.edit(embed=raceEmbed(playerList, racePositions, marbles, countdown))
+        if countdown > 0:
+            if countdown == 3:
+                await message.add_reaction('🔴')
+            if countdown == 2:
+                await message.add_reaction('🟡')
+            if countdown == 1:
+                await message.add_reaction('🟢')
+            countdown -= 1
+            await asyncio.sleep(1)
+        else:
+            if countdown == 0:
+                countdown -= 1
+                await message.add_reaction('🏳️')
+            for x in range(len(racePositions)):
+                racePositions[x] += random.randint(0,3)
+                if racePositions[x] > 49:
+                    raceFinished = True
+                    winners.append(x)
+            await asyncio.sleep(1)
+
+    #TODO what to do in the case of a tie
+    if len(winners) == 1:
+        await ctx.send(f"{playerList[0]} wins")
+        return
+    else:
+        await ctx.send(f"{', '.join(playerList[x] for x in winners)} tied for first")
+        return
+
+def raceLobbyEmbed(playerList, time):
+    em = discord.Embed(title = "Marble Race", description = "React ✅ to join. Up to 8 people can join a race.\nYou must be registered to play\nRace creator can react 🏁 to start instantly or ❎ to cancel the race")
+    if len(playerList) != 0:
+        em.add_field(name = f"Time to join: {time} seconds\nPlayer list", value = f"`{', '.join(player for player in playerList)}`", inline=True)
+
+    else:
+        em.add_field(name = f"Time to join: {time} seconds\nPlayer list", value = "`\u200b`", inline=True)
+
+    return em
+
+def raceEmbed(playerList, racePositions, marbles, countdown):
+    if countdown > 0:
+        em = discord.Embed(title = "Marble Race", description = f"Starting in {countdown}...")
+    else:
+        players = ""
+        positions = ""
+        for x in range(len(playerList)):
+            players += f"{playerList[x]}\n"
+            positions += f"{'-'*racePositions[x]}{marbles[x]}{'-'*(49-racePositions[x])}🏁\n"
+
+        em = discord.Embed(title = "Marble Race", description = "\u200b")
+        em.add_field(name = "Player", value = players, inline=True)
+        em.add_field(name = "Position", value = positions, inline=True)
+
+    return em
+
+@bot.event
+async def on_reaction_add(reaction, user):
+    print(reaction)
+
+
 
 
     
@@ -320,6 +430,8 @@ async def on_command_error(ctx,error):
         await ctx.channel.send(f"Incorrect command usage. Type {prefix}help for assistance idiot")
     elif isinstance(error, commands.CommandNotFound):
         await ctx.channel.send("Command not found")
+    else:
+        raise error
 
 
 '''
