@@ -324,7 +324,7 @@ async def race(ctx):
 
     #TODO what to do in the case of a tie
     if len(winners) == 1:
-        await ctx.send(f"{playerList[0]} wins")
+        await ctx.send(f"{playerList[winners[0]]} wins")
         return
     else:
         await ctx.send(f"{', '.join(playerList[x] for x in winners)} tied for first")
