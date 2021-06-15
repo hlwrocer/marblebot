@@ -255,12 +255,15 @@ async def top(ctx):
     await ctx.send(embed=em)
 
 @bot.command(name="race")
-async def race(ctx):
+async def race(ctx, wager=0):
+    if wager < 0:
+        await ctx.send("entry fee must be at least 0 marbles")
+        return
     playerList = []
     marbles = ["⚫", "🔵", "🟤", "🟢", "🟠", "🟣", "🔴", "🟡"]
     random.shuffle(marbles)
     emojis = ["✅","🏁","❎"]
-    message = await ctx.send(embed = raceLobbyEmbed(playerList , 30))
+    message = await ctx.send(embed = raceLobbyEmbed(playerList , 30, wager))
     for emoji in emojis:
         await message.add_reaction(emoji)
     end = time.time() + 30
@@ -271,7 +274,7 @@ async def race(ctx):
         for x in range(0, 30, 1):
             if timeOut:
                 break
-            await message.edit(embed=raceLobbyEmbed(playerList, 30-x))
+            await message.edit(embed=raceLobbyEmbed(playerList, 30-x, wager))
             await asyncio.sleep(1)
 
     def check(reaction, user):
@@ -279,9 +282,12 @@ async def race(ctx):
         if reaction.emoji == "🏁" and user.id == ctx.author.id:
             return True
         elif reaction.emoji == "✅":
-            if isRegistered(user.id) and username not in playerList and len(playerList) < 8:
-                playerList.append(username)
+            if username not in playerList and len(playerList) < 8 and isRegistered(user.id) and getMarbles(user.id) >= wager:
+                playerList.append((username, user.id))
+                addMarbles(user.id, -1*wager)
         elif reaction.emoji == "❎" and user.id == ctx.author.id:
+            print("canceled")
+            nonlocal canceled
             canceled = True
             return True
         return False
@@ -289,12 +295,14 @@ async def race(ctx):
     await asyncio.wait([coro1(), bot.wait_for('reaction_add', check=check)], return_when=asyncio.FIRST_COMPLETED)
     timeOut = True
     if len(playerList) == 0 or canceled:
+        for player in playerList:
+            addMarbles(player[1], wager)
         await message.edit(embed=discord.Embed(Title = "Marble Race", description = "The race has been canceled"))
         return
     await message.clear_reaction("✅")
     await message.clear_reaction("🏁")
     await message.clear_reaction("❎")
-    
+ 
     raceFinished = False
     countdown = 3
     racePositions = [0]*len(playerList)
@@ -302,7 +310,7 @@ async def race(ctx):
 
     
     while not raceFinished:
-        await message.edit(embed=raceEmbed(playerList, racePositions, marbles, countdown))
+        await message.edit(embed=raceEmbed(playerList, racePositions, marbles, countdown, len(playerList)*wager))
         if countdown > 0:
             if countdown == 3:
                 await message.add_reaction('🔴')
@@ -325,37 +333,47 @@ async def race(ctx):
 
     #TODO what to do in the case of a tie
     if len(winners) == 1:
-        await ctx.send(f"{playerList[winners[0]]} wins")
+        await ctx.send(f"{playerList[winners[0]][0]} wins {wager*len(playerList)} marbles")
+        addMarbles(playerList[winners[0]][1], wager*len(playerList))
         return
     else:
-        await ctx.send(f"{', '.join(playerList[x] for x in winners)} tied for first")
+        numMarbles = (wager*len(playerList))//len(winners)
+        for x in winners:
+            addMarbles(playerList[winners[x]], numMarbles)
+        await ctx.send(f"{', '.join(playerList[x][0] for x in winners)} tied for first, each winning {numMarbles} marbles")
         return
 
-def raceLobbyEmbed(playerList, time):
-    em = discord.Embed(title = "Marble Race", description = "React ✅ to join. Up to 8 people can join a race.\nYou must be registered to play\nRace creator can react 🏁 to start instantly or ❎ to cancel the race")
+def raceLobbyEmbed(playerList, time, wager):
+    em = discord.Embed(title = "Marble Race", description = f"React ✅ to join. Up to 8 people can join a race.\nYou must be registered to play. Entry fee {wager} marbles\nRace creator can react 🏁 to start instantly or ❎ to cancel the race")
     if len(playerList) != 0:
-        em.add_field(name = f"Time to join: {time} seconds\nPlayer list", value = f"`{', '.join(player for player in playerList)}`", inline=True)
+        em.add_field(name = f"Time to join: {time} seconds\nPlayer list", value = f"`{', '.join(player[0] for player in playerList)}`", inline=True)
 
     else:
         em.add_field(name = f"Time to join: {time} seconds\nPlayer list", value = "`\u200b`", inline=True)
 
     return em
 
-def raceEmbed(playerList, racePositions, marbles, countdown):
+def raceEmbed(playerList, racePositions, marbles, countdown, prize):
     if countdown > 0:
         em = discord.Embed(title = "Marble Race", description = f"Starting in {countdown}...")
     else:
         players = ""
         positions = ""
         for x in range(len(playerList)):
-            players += f"{playerList[x]}\n"
+            players += f"{playerList[x][0]}\n"
             positions += f"{'-'*racePositions[x]}{marbles[x]}{'-'*(49-racePositions[x])}🏁\n"
 
-        em = discord.Embed(title = "Marble Race", description = "\u200b")
+        em = discord.Embed(title = "Marble Race", description = f"Prize: {prize} marbles")
         em.add_field(name = "Player", value = players, inline=True)
         em.add_field(name = "Position", value = positions, inline=True)
 
     return em
+
+@bot.command(name="devgive")
+async def devgive(ctx, user, marbles):
+    if ctx.author.id == "125828772363632640":
+        addMarbles(user.id, marbles)
+
 
 @bot.group(invoke_without_command=True)
 async def help(ctx):
@@ -406,6 +424,14 @@ async def marbles(ctx):
 async def top(ctx):
     em = discord.Embed(title = "top", description = "check the marble leaderboard", color = ctx.author.color)
     em.add_field(name = "Usage", value = f"{prefix}top")
+
+    await ctx.send(embed = em)
+
+@help.command()
+async def race(ctx):
+    em = discord.embed(title = "race", description = "start a marble race", color = ctx.author.color)
+    em.add_field(name = "Usage", value = f"{prefix}race [entry fee]")
+    em.add_field(name = "Parameters", value = "[entry fee] -- number of marbles required to enter the race, defaults 0")
 
     await ctx.send(embed = em)
 
