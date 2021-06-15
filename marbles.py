@@ -283,7 +283,7 @@ async def race(ctx, wager=0):
         if reaction.emoji == "🏁" and user.id == ctx.author.id:
             return True
         elif reaction.emoji == "✅":
-            if username not in playerList and len(playerList) < 8 and isRegistered(user.id) and getMarbles(user.id) >= wager:
+            if (username, user.id) not in playerList and len(playerList) < 8 and isRegistered(user.id) and getMarbles(user.id) >= wager:
                 playerList.append((username, user.id))
                 addMarbles(user.id, -1*wager)
         elif reaction.emoji == "❎" and user.id == ctx.author.id:
