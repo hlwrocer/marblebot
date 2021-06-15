@@ -259,6 +259,7 @@ async def race(ctx, wager=0):
     if wager < 0:
         await ctx.send("entry fee must be at least 0 marbles")
         return
+    wager = int(wager)
     playerList = []
     marbles = ["⚫", "🔵", "🟤", "🟢", "🟠", "🟣", "🔴", "🟡"]
     random.shuffle(marbles)
