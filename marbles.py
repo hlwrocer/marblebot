@@ -333,14 +333,16 @@ async def race(ctx, wager=0):
 
     #TODO what to do in the case of a tie
     if len(winners) == 1:
-        await ctx.send(f"{playerList[winners[0]][0]} wins {wager*len(playerList)} marbles")
+        await ctx.send(f"<@{playerList[winners[0]][1]}> wins {wager*len(playerList)} marbles")
+        await message.edit(embed=raceEmbed(playerList, racePositions, marbles, countdown, len(playerList)*wager, winners))
         addMarbles(playerList[winners[0]][1], wager*len(playerList))
         return
     else:
         numMarbles = (wager*len(playerList))//len(winners)
         for x in winners:
             addMarbles(playerList[winners[x]], numMarbles)
-        await ctx.send(f"{', '.join(playerList[x][0] for x in winners)} tied for first, each winning {numMarbles} marbles")
+        await ctx.send(f"{'<@' + '>, <@'.join(playerList[x][1] for x in winners) + '>'} tied for first, each winning {numMarbles} marbles")
+        await message.edit(embed=raceEmbed(playerList, racePositions, marbles, countdown, numMarbles, winners))
         return
 
 def raceLobbyEmbed(playerList, time, wager):
@@ -353,10 +355,10 @@ def raceLobbyEmbed(playerList, time, wager):
 
     return em
 
-def raceEmbed(playerList, racePositions, marbles, countdown, prize):
+def raceEmbed(playerList, racePositions, marbles, countdown, prize, winners = []):
     if countdown > 0:
         em = discord.Embed(title = "Marble Race", description = f"Starting in {countdown}...")
-    else:
+    elif len(winners) == 0:
         players = ""
         positions = ""
         for x in range(len(playerList)):
@@ -366,6 +368,20 @@ def raceEmbed(playerList, racePositions, marbles, countdown, prize):
         em = discord.Embed(title = "Marble Race", description = f"Prize: {prize} marbles")
         em.add_field(name = "Player", value = players, inline=True)
         em.add_field(name = "Position", value = positions, inline=True)
+    else:
+        players = ""
+        positions = ""
+        for x in range(len(playerList)):
+            players += f"{playerList[x][0]}\n"
+            if x not in winners:
+                positions += f"{'-'*racePositions[x]}{marbles[x]}{'-'*(49-racePositions[x])}🏁\n"
+            else:
+                positions += f"{'-'*50}{marbles[x]}\n"
+
+        em = discord.Embed(title = "Marble Race", description = f"Prize: {prize} marbles\nWinners: {', '.join(playerList[x][0] for x in winners)}")
+        em.add_field(name = "Player", value = players, inline=True)
+        em.add_field(name = "Position", value = positions, inline=True)
+
 
     return em
 
