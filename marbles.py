@@ -279,7 +279,7 @@ async def race(ctx):
         if reaction.emoji == "🏁" and user.id == ctx.author.id:
             return True
         elif reaction.emoji == "✅":
-            if isRegistered(user.id) and username not in playerList:
+            if isRegistered(user.id) and username not in playerList and len(playerList) < 8:
                 playerList.append(username)
         elif reaction.emoji == "❎" and user.id == ctx.author.id:
             canceled = True
