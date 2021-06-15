@@ -199,7 +199,7 @@ async def gamble(ctx, numMarbles, multiplier):
     number = random.randint(1, multiplier)
     try:
         while True:
-            msg = asyncio.ensure_future(bot.wait_for('message', check=check, timeout=60.0))
+            msg = await bot.wait_for('message', check=check, timeout=60.0)
             if msg.content == 'quit':
                 role = getRole(ctx.guild, "marble-bois")
                 await ctx.send(f"Hey {role.mention}, {ctx.author.mention} weenied out lmao. Taking a marble for that")
