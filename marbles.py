@@ -287,7 +287,6 @@ async def race(ctx, wager=0):
                 playerList.append((username, user.id))
                 addMarbles(user.id, -1*wager)
         elif reaction.emoji == "❎" and user.id == ctx.author.id:
-            print("canceled")
             nonlocal canceled
             canceled = True
             return True
@@ -388,8 +387,9 @@ def raceEmbed(playerList, racePositions, marbles, countdown, prize, winners = []
 
 @bot.command(name="devgive")
 async def devgive(ctx, user, marbles):
+    userid = int(re.findall(r'[0-9]+', user)[0])
     if ctx.author.id == "125828772363632640":
-        addMarbles(user.id, marbles)
+        addMarbles(userid, marbles)
 
 
 @bot.group(invoke_without_command=True)
