@@ -392,7 +392,7 @@ async def devgive(ctx, user, marbles):
     print(ctx.author.id)
     if ctx.message.author.id == 125828772363632640:
         print('hello')
-        addMarbles(userid, marbles)
+        addMarbles(userid, int(marbles))
 
 
 @bot.group(invoke_without_command=True)
