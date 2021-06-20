@@ -340,7 +340,7 @@ async def race(ctx, wager=0):
     else:
         numMarbles = (wager*len(playerList))//len(winners)
         for x in winners:
-            addMarbles(playerList[winners[x]], numMarbles)
+            addMarbles(playerList[playerList[x]], numMarbles)
         await ctx.send(f"{'<@' + '>, <@'.join(str(playerList[x][1]) for x in winners) + '>'} tied for first, each winning {numMarbles} marbles")
         await message.edit(embed=raceEmbed(playerList, racePositions, marbles, countdown, numMarbles, winners))
         return
@@ -388,10 +388,7 @@ def raceEmbed(playerList, racePositions, marbles, countdown, prize, winners = []
 @bot.command(name="devgive")
 async def devgive(ctx, user, marbles):
     userid = int(re.findall(r'[0-9]+', user)[0])
-    print(userid)
-    print(ctx.author.id)
     if ctx.message.author.id == 125828772363632640:
-        print('hello')
         addMarbles(userid, int(marbles))
 
 
@@ -426,7 +423,7 @@ async def give(ctx):
 
 @help.command()
 async def gamble(ctx):
-    em = discord.Embed(title = "give", description = "gamble your marbles", color = ctx.author.color)
+    em = discord.Embed(title = "gamble", description = "gamble your marbles", color = ctx.author.color)
     em.add_field(name = "Usage", value = f"{prefix}gamble numMarbles multiplier")
     em.add_field(name = "Parameters", value = "numMarbles -- number of marbles you want to gamble \nmultiplier -- multiplier between 2 and 10")
 
