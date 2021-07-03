@@ -190,6 +190,7 @@ async def gamble(ctx, numMarbles, multiplier):
     elif multiplier < 2 or multiplier > 10:
         await ctx.send(f"{ctx.author.mention} enter a multiplier between 2 and 10")
         return
+    addMarbles(ctx.author.id, -1*numMarbles)
     
     def check(msg):
         return msg.author.id == ctx.message.author.id and msg.channel == ctx.message.channel
@@ -203,7 +204,7 @@ async def gamble(ctx, numMarbles, multiplier):
             if msg.content == 'quit':
                 role = getRole(ctx.guild, "marble-bois")
                 await ctx.send(f"Hey {role.mention}, {ctx.author.mention} weenied out lmao. Taking a marble for that")
-                addMarbles(ctx.author.id, -1)
+                addMarbles(ctx.author.id, numMarbles-1)
                 return
             elif re.match('^[0-9]$', msg.content) is None:
                 await ctx.send(f"{ctx.author.mention} enter a valid number guess")
@@ -211,11 +212,10 @@ async def gamble(ctx, numMarbles, multiplier):
                 guess = int(msg.content)
                 if guess == number:
                     await ctx.send(f"Congrats {ctx.author.mention} you won {multiplier*numMarbles} marbles")
-                    addMarbles(ctx.author.id, (multiplier-1)*numMarbles)
+                    addMarbles(ctx.author.id, (multiplier)*numMarbles)
                     return
                 else:
                     await ctx.send(f"fbm {ctx.author.mention} you lost {numMarbles} marbles")
-                    addMarbles(ctx.author.id, -1*numMarbles)
                     return
     except asyncio.TimeoutError:
         await ctx.send(f"{ctx.author.mention} you took to long so I'm taking your marbles for wasting my time")
