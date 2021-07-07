@@ -1,6 +1,8 @@
 from discord.ext import commands
 import os
 import pymongo
+from decimal import Decimal
+from bson import decimal128
 
 class Mongo(commands.Cog):
     """For DB operations"""
@@ -19,10 +21,10 @@ class Mongo(commands.Cog):
 
     def getMarbles(self, userID):
     #assumes userID is registered
-        return self.collection.find_one({"userID": userID}, {"_id":0, "marbles":1})['marbles']
+        return self.collection.find_one({"userID": userID}, {"_id":0, "marbles":1})['marbles']/100
 
     def addMarbles(self, userID, amount):
-        self.collection.update_one({"userID": userID}, {"$inc": {"marbles": amount}})
+        self.collection.update_one({"userID": userID}, {"$inc": {"marbles": int(amount*100)}})
 
 
 
