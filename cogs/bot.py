@@ -135,7 +135,7 @@ class Bot(commands.Cog):
         pos = 0
         for doc in records:
             username = await self.bot.fetch_user(doc['userID'])
-            marbleCount = doc['marbles']
+            marbleCount = doc['marbles']/100
             users += f"{pos+1}. {username}" + "\n"
             numMarbles += f"{marbleCount}" + "\n"
             pos+=1
