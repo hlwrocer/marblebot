@@ -16,7 +16,6 @@ class HelpCommands(commands.HelpCommand):
 
     async def send_bot_help(self, mapping):
         ctx = self.context
-        bot = ctx.bot
         embed = self.make_embed("Marbles Help", f"Use `{self.clean_prefix}help <command>` for more info on a command.")
         for cog,commands in mapping.items():
             if len(commands) == 0 or cog == None or cog.qualified_name == 'Admin':
@@ -27,25 +26,23 @@ class HelpCommands(commands.HelpCommand):
 
 
     async def send_command_help(self, command):
-        print(command)
-        embed = self.make_embed(self.clean_prefix + command.qualified_name)
+        embed = self.make_embed(self.clean_prefix + command.qualified_name + f'[{"|".join(command.aliases)}]')
 
-        if command.description:
-            embed.description = f"{command.description}\n\n{command.help}"
+        if command.help:
+            embed.description = command.help
         else:
-            embed.description = command.help or "No help found"
+            embed.description = "No help found"
 
         embed.add_field(name="Usage", value=self.get_command_signature(command))
         await self.context.send(embed=embed)
 
     async def send_group_help(self, group):
-        ctx = self.context
-        bot = ctx.bot
-        ctx.invoked_with = "help"
-
-        embed = self.make_embed(f"{group.qualified_name} help", description=f"{group.description}")
+        self.context.invoked_with = "help"
+        embed = self.make_embed(f"{self.clean_prefix}{group.qualified_name}[{'|'.join(group.aliases)}] <subcommand>", description=group.help)
         for command in group.commands:
-            embed.add_field(name = f"{command.qualified_name} {command.signature}", value= f"{command.help}", inline=False)
+            embed.add_field(name = f"{command.qualified_name} {command.signature}", value= f"{command.help}\n_{self.get_command_signature(command)}_", inline=False)
+
+        embed.set_footer(text=f'Use `{self.clean_prefix}help command` for more info on a command')
         await self.context.send(embed=embed)
 
     async def send_cog_help(ctx, cog):
