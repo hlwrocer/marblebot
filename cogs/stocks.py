@@ -115,7 +115,7 @@ class Stocks(commands.Cog):
     async def portfolio(self, ctx):
         '''Get your stock portfolio'''
         portfolio = self.bot.mongo.getField(ctx.author.id, "portfolio")
-        if portfolio == None or len(portfolio) == 0:
+        if portfolio == {} or len(portfolio['portfolio']) == 0:
             await ctx.send(f"{ctx.author.mention} you don't own any stocks")
             return
 
