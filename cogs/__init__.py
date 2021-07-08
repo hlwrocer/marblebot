@@ -3,5 +3,6 @@ default = (
     "mongo",
     "gamble",
     "bot",
-    "admin"
+    "admin",
+    "stocks"
 )

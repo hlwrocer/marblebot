@@ -35,7 +35,10 @@ class MarblesBot(commands.Bot):
             await ctx.channel.send(f"Incorrect command usage: {error}")
         elif isinstance(error, commands.CommandNotFound):
             await ctx.channel.send("Command not found")
+        elif isinstance(error, commands.CommandOnCooldown):
+            await ctx.channel.send(error)
         else:
+            await ctx.channel.send(f"tell hanny you got this error: {error}")
             raise error
 
     @property

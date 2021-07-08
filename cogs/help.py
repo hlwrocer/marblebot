@@ -22,7 +22,6 @@ class HelpCommands(commands.HelpCommand):
             if len(commands) == 0 or cog == None or cog.qualified_name == 'Admin':
                 pass
             else:
-                print(commands)
                 embed.add_field(name = cog.qualified_name, value = f"{cog.description or 'No description'}\n{''.join([f'`{command.qualified_name}` ' for command in commands])}", inline=False)
         await ctx.send(embed=embed)
 
@@ -39,8 +38,15 @@ class HelpCommands(commands.HelpCommand):
         embed.add_field(name="Usage", value=self.get_command_signature(command))
         await self.context.send(embed=embed)
 
-    async def send_group_help(ctx, group):
-        return
+    async def send_group_help(self, group):
+        ctx = self.context
+        bot = ctx.bot
+        ctx.invoked_with = "help"
+
+        embed = self.make_embed(f"{group.qualified_name} help", description=f"{group.description}")
+        for command in group.commands:
+            embed.add_field(name = f"{command.qualified_name} {command.signature}", value= f"{command.help}", inline=False)
+        await self.context.send(embed=embed)
 
     async def send_cog_help(ctx, cog):
         return

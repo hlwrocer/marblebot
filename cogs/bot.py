@@ -31,6 +31,9 @@ class Bot(commands.Cog):
         '''Check how many marbles you or a user has
         **user** (optional): A user you want to look up'''
         if user == None:
+            if not self.bot.mongo.isRegistered(ctx.author.id):
+                await ctx.send(f"{ctx.author.mention} you are not registered.")
+                return
             userID = ctx.author.id
             user = ctx.message.author.mention
         else:

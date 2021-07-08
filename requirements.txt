@@ -2,3 +2,4 @@ discord.py
 pytz
 pymongo
 dnspython
+yfinance
