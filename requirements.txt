@@ -2,4 +2,4 @@ discord.py
 pytz
 pymongo
 dnspython
-yfinance==0.16.2
+yfinance==0.1.62
