@@ -11,7 +11,7 @@ class Admin(commands.Cog):
     async def devgive(self, ctx, user, marbles):
         """Only the dev can use this"""
         userid = int(re.findall(r'[0-9]+', user)[0])
-        self.bot.mongo.addMarbles(userid, marbles)
+        self.bot.mongo.addMarbles(userid, float(marbles))
 
 def setup(bot):
     bot.add_cog(Admin(bot))
