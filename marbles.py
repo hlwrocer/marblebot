@@ -38,7 +38,7 @@ class MarblesBot(commands.Bot):
         elif isinstance(error, commands.CommandOnCooldown):
             await ctx.channel.send(error)
         else:
-            await ctx.channel.send(f"tell hanny you got this error: {error}")
+            await ctx.channel.send(f"<@125828772363632640> {ctx.message}: {error}")
             raise error
 
     @property

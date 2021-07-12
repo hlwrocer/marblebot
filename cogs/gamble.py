@@ -1,5 +1,5 @@
 from discord.ext import commands
-from helpers import checks
+from helpers import checks, util
 from threading import Timer
 
 import time
@@ -50,7 +50,7 @@ class Gamble(commands.Cog):
             while True:
                 msg = await self.bot.wait_for('message', check=check, timeout=60.0)
                 if msg.content == 'quit':
-                    role = getRole(ctx.guild, "marble-bois")
+                    role = util.getRole(ctx.guild, "marble-bois")
                     await ctx.send(f"Hey {role.mention}, {ctx.author.mention} weenied out lmao. Taking a marble for that")
                     self.bot.mongo.addMarbles(ctx.author.id, numMarbles-1)
                     return
