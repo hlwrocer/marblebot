@@ -55,7 +55,7 @@ class Stocks(commands.Cog):
         portfolio = self.bot.mongo.getField(ctx.author.id, "portfolio")
         if len(portfolio) != 0 and ticker in portfolio['portfolio']:
             costBasis = portfolio['portfolio'][ticker]["costBasis"]
-            totalCost = costBasis * quantity + cost
+            totalCost = (costBasis * portfolio['portfolio'][ticker]['quantity']) + cost
 
             owned = portfolio['portfolio'][ticker]["quantity"] + quantity
             costBasis = round(totalCost / owned, 2)
