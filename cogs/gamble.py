@@ -63,19 +63,19 @@ class Gamble(commands.Cog):
                     if choice == 1: #bot picks paper
                         await ctx.send(f"{ctx.author.mention} picked {reaction} and I chose {emojis[choice]}. Thanks for the marbles")
                     elif choice == 2: #bot picks scissors
-                        self.bot.mongo.addMarbles(ctx.author.id, numMarbles)
+                        self.bot.mongo.addMarbles(ctx.author.id, 2*numMarbles)
                         await ctx.send(f"{ctx.author.mention} picked {reaction} and I chose {emojis[choice]}. You got lucky this time and won {numMarbles} marbles.")
                 elif reaction.emoji == emojis[1]: #user choose paper:
                     if choice == 0: #bot picks rock
                         await ctx.send(f"{ctx.author.mention} picked {reaction} and I chose {emojis[choice]}. Thanks for the marbles")
                     elif choice == 2: #bot picks scissors
-                        self.bot.mongo.addMarbles(ctx.author.id, numMarbles)
+                        self.bot.mongo.addMarbles(ctx.author.id, 2*numMarbles)
                         await ctx.send(f"{ctx.author.mention} picked {reaction} and I chose {emojis[choice]}. You got lucky this time and won {numMarbles} marbles.")
                 elif reaction.emoji == emojis[2]: #user chooses scissors:
                     if choice == 0: #bot picks rock
                         await ctx.send(f"{ctx.author.mention} picked {reaction} and I chose {emojis[choice]}. Thanks for the marbles")
                     elif choice == 1: #bot picks paper
-                        self.bot.mongo.addMarbles(ctx.author.id, numMarbles)
+                        self.bot.mongo.addMarbles(ctx.author.id, 2*numMarbles)
                         await ctx.send(f"{ctx.author.mention} picked {reaction} and I chose {emojis[choice]}. You got lucky this time and won {numMarbles} marbles.")
             return
 
