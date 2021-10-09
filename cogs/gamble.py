@@ -14,6 +14,79 @@ class Gamble(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+
+    @commands.command(name='rps')
+    @checks.registered()
+    async def rps(self, ctx, numMarbles:float):
+        '''Play Rock Paper Scissors against the bot. Win and double your marbles
+        **numMarbles**: Number of marbles you want to wager. Must be > 0
+        '''
+        numMarbles = round(numMarbles, 2)
+        result = -1 # 0 win, 1 loss, 2 tie
+        if self.bot.mongo.getMarbles(ctx.author.id) < numMarbles:
+            await ctx.send(f"{ctx.author.mention} you don't have enough marbles")
+            return
+        elif numMarbles <= 0:
+            await ctx.send(f"{ctx.author.mention} you must bet a positive number of marbles")
+            return
+        self.bot.mongo.addMarbles(ctx.author.id, -1*numMarbles)
+        def check(msg):
+            return msg.author.id == ctx.message.author.id and msg.channel == ctx.message.channel
+
+        userID = ctx.message.author.id
+        choice = random.randint(0,2)
+        emojis = ['✊','🖐️','✌️']
+        msg = await ctx.send(f"{ctx.author.mention} I picked my choice, waiting for you to pick {emojis[0]}, {emojis[1]}, or {emojis[2]}")
+        for emoji in emojis:
+            await msg.add_reaction(emoji)
+
+        def check(reaction, user):
+            print('check', reaction, user)
+            print(reaction.emoji == emojis[0], user.id == ctx.author.id)
+            if reaction.emoji == emojis[0] and user.id == ctx.author.id:
+                return True
+            elif reaction.emoji == emojis[1] and user.id == ctx.author.id:
+                return True
+            elif reaction.emoji == emojis[2] and user.id == ctx.author.id:
+                return True
+        try:
+            reaction, user = await self.bot.wait_for('reaction_add', check=check, timeout=60.0)
+            print(reaction, user)
+            print(choice)
+            if reaction.emoji == emojis[choice]:
+                self.bot.mongo.addMarbles(ctx.author.id, numMarbles)
+                await ctx.send(f"{ctx.author.mention} We both picked {emojis[choice]}. It's a tie so I'll give you your marbles back")
+            else:
+                print('?')
+                print('hello?', reaction.emoji == emojis[0])
+                if reaction.emoji == emojis[0]: #user chooses roc
+                    if choice == 1: #bot picks paper
+                        await ctx.send(f"{ctx.author.mention} picked {reaction} and I chose {emojis[choice]}. Thanks for the marbles")
+                    elif choice == 2: #bot picks scissors
+                        self.bot.mongo.addMarbles(ctx.author.id, numMarbles)
+                        await ctx.send(f"{ctx.author.mention} picked {reaction} and I chose {emojis[choice]}. You got lucky this time and won {numMarbles} marbles.")
+                elif reaction.emoji == emojis[1]: #user choose paper:
+                    if choice == 0: #bot picks rock
+                        await ctx.send(f"{ctx.author.mention} picked {reaction} and I chose {emojis[choice]}. Thanks for the marbles")
+                    elif choice == 2: #bot picks scissors
+                        self.bot.mongo.addMarbles(ctx.author.id, numMarbles)
+                        await ctx.send(f"{ctx.author.mention} picked {reaction} and I chose {emojis[choice]}. You got lucky this time and won {numMarbles} marbles.")
+                elif reaction.emoji == emojis[2]: #user chooses scissors:
+                    if choice == 0: #bot picks rock
+                        await ctx.send(f"{ctx.author.mention} picked {reaction} and I chose {emojis[choice]}. Thanks for the marbles")
+                    elif choice == 1: #bot picks paper
+                        self.bot.mongo.addMarbles(ctx.author.id, numMarbles)
+                        await ctx.send(f"{ctx.author.mention} picked {reaction} and I chose {emojis[choice]}. You got lucky this time and won {numMarbles} marbles.")
+            return
+
+        except asyncio.TimeoutError:
+            await ctx.send(f"{ctx.author.mention} you took to long so I'm taking your marbles for wasting my time")
+            return
+
+
+
+
+
     @commands.command(name="gamble")
     @checks.registered()
     async def gamble(self, ctx, numMarbles: float, multiplier: int):
@@ -67,7 +140,6 @@ class Gamble(commands.Cog):
                         return
         except asyncio.TimeoutError:
             await ctx.send(f"{ctx.author.mention} you took to long so I'm taking your marbles for wasting my time")
-            self.bot.mongo.addMarbles(ctx.author.id, -1*numMarbles)
             return
 
     @checks.registered()
