@@ -41,8 +41,6 @@ class Gamble(commands.Cog):
             await msg.add_reaction(emoji)
 
         def check(reaction, user):
-            print('check', reaction, user)
-            print(reaction.emoji == emojis[0], user.id == ctx.author.id)
             if reaction.emoji == emojis[0] and user.id == ctx.author.id:
                 return True
             elif reaction.emoji == emojis[1] and user.id == ctx.author.id:
@@ -51,14 +49,10 @@ class Gamble(commands.Cog):
                 return True
         try:
             reaction, user = await self.bot.wait_for('reaction_add', check=check, timeout=60.0)
-            print(reaction, user)
-            print(choice)
             if reaction.emoji == emojis[choice]:
                 self.bot.mongo.addMarbles(ctx.author.id, numMarbles)
                 await ctx.send(f"{ctx.author.mention} We both picked {emojis[choice]}. It's a tie so I'll give you your marbles back")
             else:
-                print('?')
-                print('hello?', reaction.emoji == emojis[0])
                 if reaction.emoji == emojis[0]: #user chooses roc
                     if choice == 1: #bot picks paper
                         await ctx.send(f"{ctx.author.mention} picked {reaction} and I chose {emojis[choice]}. Thanks for the marbles")
@@ -67,10 +61,10 @@ class Gamble(commands.Cog):
                         await ctx.send(f"{ctx.author.mention} picked {reaction} and I chose {emojis[choice]}. You got lucky this time and won {numMarbles} marbles.")
                 elif reaction.emoji == emojis[1]: #user choose paper:
                     if choice == 0: #bot picks rock
-                        await ctx.send(f"{ctx.author.mention} picked {reaction} and I chose {emojis[choice]}. Thanks for the marbles")
-                    elif choice == 2: #bot picks scissors
                         self.bot.mongo.addMarbles(ctx.author.id, 2*numMarbles)
                         await ctx.send(f"{ctx.author.mention} picked {reaction} and I chose {emojis[choice]}. You got lucky this time and won {numMarbles} marbles.")
+                    elif choice == 2: #bot picks scissors
+                        await ctx.send(f"{ctx.author.mention} picked {reaction} and I chose {emojis[choice]}. Thanks for the marbles")
                 elif reaction.emoji == emojis[2]: #user chooses scissors:
                     if choice == 0: #bot picks rock
                         await ctx.send(f"{ctx.author.mention} picked {reaction} and I chose {emojis[choice]}. Thanks for the marbles")
