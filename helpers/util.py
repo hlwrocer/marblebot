@@ -8,7 +8,6 @@ class Timer:
         self._args = callbackArgs
 
     async def _job(self):
-        print('timer started')
         await asyncio.sleep(self._timeout)
         await self._callback(*self._args)
 
