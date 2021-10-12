@@ -4,5 +4,6 @@ default = (
     "gamble",
     "bot",
     "admin",
-    "stocks"
+    "stocks",
+    "competitive"
 )

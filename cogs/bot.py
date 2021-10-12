@@ -19,7 +19,7 @@ class Bot(commands.Cog):
         query = {"userID" : ctx.author.id}
         collection = self.bot.mongo.collection
         if collection.count_documents(query, limit=1)==0:
-            query = {"userID": ctx.author.id, "marbles": 100}
+            query = {"userID": ctx.author.id, "marbles": 10000}
             collection.insert(query)
             await ctx.channel.send("{} is given 100 marbles".format(ctx.message.author.mention))
         else:
