@@ -521,7 +521,7 @@ class Competitive(commands.Cog):
         Ea = 1/(1+10**((average-elo)/400))
         K = 16
         change = 16*(result - Ea)
-        return change
+        return round(change)
 
     def closeLobby(self, lobby, lobbyID, message):
         mongo = self.bot.mongo
