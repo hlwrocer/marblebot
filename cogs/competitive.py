@@ -499,6 +499,7 @@ class Competitive(commands.Cog):
 
             users += f"{pos+1}. {username}" + "\n"
             stats += f"{elo}({wins}/{losses}/{draws})" + "\n"
+            pos += 1
 
             if pos == count:
                 break
