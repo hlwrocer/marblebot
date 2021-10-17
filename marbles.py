@@ -48,7 +48,7 @@ class MarblesBot(commands.Bot):
 
 
 
-bot = MarblesBot(command_prefix=prefix, owner_id = owner_id)
+bot = MarblesBot(command_prefix=prefix, owner_id = owner_id, case_insensitive=True)
 bot.run(TOKEN)
 
 

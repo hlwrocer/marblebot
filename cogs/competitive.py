@@ -245,7 +245,7 @@ class Competitive(commands.Cog):
         
         
 
-    @commands.command(name="createLobby")
+    @commands.command(name="createLobby", case_insensitive=True)
     @checks.registered()
     async def createLobby(self, ctx, game):
         '''Create a ranked lobby for the specified `game`
@@ -303,7 +303,7 @@ class Competitive(commands.Cog):
 
 
 
-    @commands.command(name="lobby")
+    @commands.command(name="lobby", case_insensitive=True)
     @checks.registered()
     async def lobby(self, ctx):
         '''Bring back the lobby you are currently in'''
@@ -440,7 +440,7 @@ class Competitive(commands.Cog):
         em.add_field(name="Team 2", value = f'{chr(10).join(member for member in team2)}')
         return em
 
-    @commands.command(name="rank")
+    @commands.command(name="rank", case_insensitive=True)
     @checks.registered()
     async def rank(self, ctx, game, user):
         '''Check a players elo for a certain game
@@ -472,7 +472,7 @@ class Competitive(commands.Cog):
             draws = elos['elos'][game]['draws']
             await ctx.send(f"{user}'s {game} stats are {elo} elo, {wins} wins, {losses} losses, and {draws} draws")
 
-    @commands.command(name="rankTop")
+    @commands.command(name="rankTop", case_insensitive=True)
     @checks.registered()
     async def rankTop(self, ctx, game):
         '''Shows the users with the top 10 elos for the specified game

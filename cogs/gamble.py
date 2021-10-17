@@ -15,7 +15,7 @@ class Gamble(commands.Cog):
         self.bot = bot
 
 
-    @commands.command(name='rps')
+    @commands.command(name='rps', case_insensitive=True)
     @checks.registered()
     async def rps(self, ctx, numMarbles:float):
         '''Play Rock Paper Scissors against the bot. Win and double your marbles
@@ -81,7 +81,7 @@ class Gamble(commands.Cog):
 
 
 
-    @commands.command(name="gamble")
+    @commands.command(name="gamble", case_insensitive=True)
     @checks.registered()
     async def gamble(self, ctx, numMarbles: float, multiplier: int):
         '''Gamble your marbles
@@ -137,7 +137,7 @@ class Gamble(commands.Cog):
             return
 
     @checks.registered()
-    @commands.command(name="race")
+    @commands.command(name="race", case_insensitive=True)
     async def race(self, ctx, wager: float=0.0):
         '''Start a marble race. Pot split amongst the winners.
         **wager**: Entry fee for the race, default 0.

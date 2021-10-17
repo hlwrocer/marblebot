@@ -12,7 +12,7 @@ class Bot(commands.Cog):
         self.bot = bot
 
 
-    @commands.command(name="register")
+    @commands.command(name="register", case_insensitive=True)
     @checks.addRole()
     async def register(self, ctx):
         '''Register to use the bot and get 100 marbles'''
@@ -25,7 +25,7 @@ class Bot(commands.Cog):
         else:
             await ctx.channel.send("{} you already registered noob".format(ctx.message.author.mention))
 
-    @commands.command(name="marbles")
+    @commands.command(name="marbles", case_insensitive=True)
     @checks.addRole()
     async def marbles(self, ctx, user=None):
         '''Check how many marbles you or a user has
@@ -49,7 +49,7 @@ class Bot(commands.Cog):
         numMarbles = self.bot.mongo.getMarbles(userID)
         await ctx.send(f"{user} has {numMarbles} marbles")
 
-    @commands.command(name="give")
+    @commands.command(name="give", case_insensitive=True)
     @checks.registered()
     @checks.addRole()
     async def give(self, ctx, user, number: float):
@@ -92,7 +92,7 @@ class Bot(commands.Cog):
 
         await ctx.send(f"{ctx.author.mention} gave {number} marbles to {user}")
 
-    @commands.command(name="daily")
+    @commands.command(name="daily", case_insensitive=True)
     @checks.registered()
     @checks.addRole()
     async def daily(self, ctx):
@@ -118,7 +118,7 @@ class Bot(commands.Cog):
         return
 
 
-    @commands.command(name="top")
+    @commands.command(name="top", case_insensitive=True)
     async def top(self, ctx):
         '''Show the top 10 marble holders'''
         collection = self.bot.mongo.collection
