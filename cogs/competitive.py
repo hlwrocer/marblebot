@@ -375,7 +375,10 @@ class Competitive(commands.Cog):
         else: 
             em = discord.Embed(title = f"Ranked {game} results", description = f"Lobby Owner: <@{lobbyOwner}>.\nReact to a number to join that team.\nReact 0️⃣ to leave the lobby. The lobby owner cannot leave \n Lobby owner can react ✅ to start the lobby, and ❎ to close the lobby.")
             
-        em.add_field(name="Team 1", value = f'{chr(10).join(member for member in team1)}')
+        if len(team1) == 0:
+            em.add_field(name="Team 1", value = '`\u200b`')
+        else:
+            em.add_field(name="Team 1", value = f'{chr(10).join(member for member in team1)}')
         if len(team2) == 0:
             em.add_field(name="Team 2", value = '`\u200b`')
         else:

@@ -3,3 +3,4 @@ pytz
 pymongo
 dnspython
 yfinance==0.1.62
+pynacl
