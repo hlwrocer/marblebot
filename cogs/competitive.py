@@ -196,7 +196,7 @@ class Competitive(commands.Cog):
                     await reaction.message.edit(embed = await self.lobbyEmbed(game,lobby, canceled=True))
                     return
 
-                elif reaction.emoji == "1️⃣" and user.id != lobbyOwner: #team1
+                elif reaction.emoji == "1️⃣":
                     if elos['elos']['lobby'] != -1 and elos['elos']['lobby'] != lobbyID:
                         await ctx.send(f'{user.mention} you are already in a ranked lobby. Finish that one before starting a new one')
                         return False
@@ -214,7 +214,7 @@ class Competitive(commands.Cog):
                     await reaction.message.edit(embed = await self.lobbyEmbed(game, lobby))
                     return
 
-                elif reaction.emoji == "2️⃣" and user.id != lobbyOwner: #team2
+                elif reaction.emoji == "2️⃣":
                     if elos['elos']['lobby'] != -1 and elos['elos']['lobby'] != lobbyID:
                         await ctx.send(f'{user.mention} you are already in a ranked lobby. Finish that one before starting a new one')
                         return
