@@ -161,10 +161,12 @@ class Bot(commands.Cog):
         else:
             for role in ctx.author.roles:
                 if role.name == "not razzle":
-                    await f"{ctx.author.mention}, you are already not razzle"
+                    await ctx.send(f"{ctx.author.mention}, you are already not razzle")
                     return
 
-            role = getRole(ctx.guild, "not razzle")
+            role = discord.utils.get(ctx.guild.roles, name="not razzle")
+            if role == None:
+                role = await ctx.guild.create_role(name="not razzle")
             await ctx.message.author.add_roles(role)
             await ctx.send(f"{ctx.author.mention}, you are officially not razzle")
 
