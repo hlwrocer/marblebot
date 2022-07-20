@@ -1,2 +1,2 @@
-worker: python ./marbles.py
+worker: python3 ./marbles.py
 
