@@ -115,7 +115,7 @@ class Bot(commands.Cog):
         self.bot.mongo.addMarbles(userID, 10)
         await ctx.send(f"{ctx.author.mention} you get 10 daily marbles")
 
-        return
+        re
 
 
     @commands.command(name="top", case_insensitive=True)
@@ -151,6 +151,24 @@ class Bot(commands.Cog):
         em.add_field(name = "Marbles", value=numMarbles, inline=True)
         
         await ctx.send(embed=em)
+
+    @commands.command(name="notrazzle", case_insensitive=True)
+    async def notrazzle(self, ctx):
+        '''get the not razzle role if you aren't razzle'''
+
+        if ctx.author.id == 135641637740085248:
+            await ctx.send(f"nice try {ctx.author.mention}")
+        else:
+            for role in ctx.author.roles:
+                if role.name == "not razzle":
+                    await f"{ctx.author.mention}, you are already not razzle"
+                    return
+
+            role = getRole(ctx.guild, "not razzle")
+            await ctx.message.author.add_roles(role)
+            await ctx.send(f"{ctx.author.mention}, you are officially not razzle")
+
+
 
 def setup(bot):
     bot.add_cog(Bot(bot))
