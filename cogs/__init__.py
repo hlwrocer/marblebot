@@ -5,5 +5,6 @@ default = (
     "bot",
     "admin",
     "stocks",
-    "competitive"
+    "competitive",
+    "anime"
 )
