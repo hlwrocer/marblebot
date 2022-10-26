@@ -247,7 +247,6 @@ class Anime(commands.Cog):
     async def animeAlert(self):
         #hard coded channel id cause bot only runs in one server
         channelID = 851281506637709342
-        channelID = 999435543962189964
         #TODO: Handle updating when an end date gets added to an anime some how, possibly just requery server and see if there's an update?
         channel = self.bot.get_channel(channelID)
         await channel.send("Anime time onii-chans ( ˶ˆ꒳ˆ˵ ). Looking up what's airing today! ヾ( ˃ᴗ˂ )◞ • *✰")
