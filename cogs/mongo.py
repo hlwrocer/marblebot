@@ -1,6 +1,7 @@
 from discord.ext import commands
 import os
 import pymongo
+#TODO: clean this up, this is so messy and inconsistent. idk if half of these take in int/strings anymore
 
 class Mongo(commands.Cog):
     """For DB operations"""
@@ -11,6 +12,7 @@ class Mongo(commands.Cog):
         self.db = mongo["marbles"]
         self.collection = self.db["marbleUsers"]
         self.lobbies = self.db["lobbies"]
+        self.anime = self.db["anime"]
     def isRegistered(self, userID):
         #mongoDB check
         query = {"userID": int(userID)}
@@ -27,6 +29,12 @@ class Mongo(commands.Cog):
 
     def getField(self, userID, field):
         return self.collection.find_one({"userID": userID}, {"_id":0, field:1})
+
+    def setField(self, userID, field, value):
+        return self.collection.update_one({"userID": userID}, {"$set": {field: value}})
+
+    def deleteField(self, userID, field):
+        return self.collection.update_one({"userID":userID}, {"$unset": {field: 1}})
 
     def getLobbies(self):
         return self.lobbies.find_one({},{})
@@ -70,6 +78,23 @@ class Mongo(commands.Cog):
     def createElo(self, user, record):
         return self.collection.update_one({"userID": user}, {"$set": {"elos": record}})
 
+    def getAnime(self, animeID):
+        return self.anime.find_one({"animeID": animeID})
 
-def setup(bot):
-    bot.add_cog(Mongo(bot))
+    def setAnime(self, animeID, animeInfo):
+        return self.anime.update_one({"animeID": animeID}, {"$set": animeInfo})
+
+    def getDailyAnime(self, day):
+        return self.anime.find({"day": day})
+
+    def createAnime(self, animeInfo):
+        return self.anime.insert_one(animeInfo)
+
+    def deleteAnime(self, animeID):
+        return self.anime.delete_one({"animeID": animeID})
+
+
+
+
+async def setup(bot):
+    await bot.add_cog(Mongo(bot))

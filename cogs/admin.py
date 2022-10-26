@@ -17,7 +17,7 @@ class Admin(commands.Cog):
     @commands.is_owner()
     @commands.command(name='reload', case_insensitive=True)
     async def reload(self, ctx, cog):
-        self.bot.reload_extension(f"cogs.{cog}")
+        await self.bot.reload_extension(f"cogs.{cog}")
         embed = discord.Embed(title='Reload', description=f'{cog} successfully reloaded')
         await ctx.send(embed=embed)
 
@@ -35,5 +35,5 @@ class Admin(commands.Cog):
 
         
 
-def setup(bot):
-    bot.add_cog(Admin(bot))
+async def setup(bot):
+    await bot.add_cog(Admin(bot))

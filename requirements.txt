@@ -1,6 +1,6 @@
-discord.py
 pytz
 pymongo
 dnspython
 yfinance==0.1.62
+git+https://github.com/Rapptz/discord.py
 pynacl

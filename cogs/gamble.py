@@ -276,5 +276,5 @@ def raceEmbed(playerList, racePositions, marbles, countdown, prize, winners = []
 
     return em
 
-def setup(bot):
-    bot.add_cog(Gamble(bot))
+async def setup(bot):
+    await bot.add_cog(Gamble(bot))
