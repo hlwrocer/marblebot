@@ -6,6 +6,7 @@ import time
 import cogs
 import pymongo
 import asyncio
+import traceback
 
 from discord.ext import commands
 from helpers import util, checks
@@ -26,8 +27,9 @@ class MarblesBot(commands.Bot):
                 await guild.create_role(name="marble-bois")
 
     async def on_command_error(self, ctx, error):
-        error = getattr(error, 'original', error)
         print(error)
+        origerror = error
+        error = getattr(error, 'original', error)
         if isinstance(error, pymongo.errors.ServerSelectionTimeoutError):
             await ctx.channel.send("{} failed. db probably down or something".format(ctx.command))
         elif isinstance(error, commands.MissingRequiredArgument) or isinstance(error, commands.BadArgument):
@@ -36,8 +38,10 @@ class MarblesBot(commands.Bot):
             await ctx.channel.send("Command not found")
         elif isinstance(error, commands.CommandOnCooldown):
             await ctx.channel.send(error)
+        elif isinstance(error, commands.TimeoutError):
+            return
         else:
-            await ctx.channel.send(f"<@125828772363632640> {ctx.message.content}: {error}")
+            await ctx.channel.send(f"<@125828772363632640> {ctx.message.content}: {orig}")
             raise error
 
     async def setup_hook(self):

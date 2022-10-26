@@ -3,8 +3,8 @@ import discord
 import yfinance as yf
 import requests
 from discord.ext import tasks
-from datetime import datetime
-from datetime import time
+from datetime import datetime, time
+from backports.zoneinfo import ZoneInfo
 from pytz import timezone
 from helpers import checks
 import pytz
@@ -161,7 +161,9 @@ class Anime(commands.Cog):
 
         #add anime
         authorid = ctx.message.author.id
-        anime = self.bot.mongo.getField(authorid, "anime")['anime']
+        anime = self.bot.mongo.getField(authorid, "anime")
+        if anime != {}:
+            anime = anime['anime']
         animeID = str(animeInfo[0]['id'])
 
         if animeID in anime:
@@ -174,8 +176,6 @@ class Anime(commands.Cog):
         #update anime tracker list
         animeList = self.bot.mongo.getAnime(animeID)
 
-        #get day based off of last episode
-        date = datetime(animeInfo[0]['startDate']['year'], animeInfo[0]['startDate']['month'], animeInfo[0]['startDate']['day'])
         if animeInfo[0]['endDate']['year'] == None:
             endDate = None
         else:
@@ -188,7 +188,6 @@ class Anime(commands.Cog):
                     'animeID': animeID,
                     'title': animeInfo[0]['title']['userPreferred'],
                     'users': {str(ctx.author.id): "1"},
-                    'day': date.strftime('%A'),
                     'lastEpisode': endDate
                     }
             
@@ -200,14 +199,18 @@ class Anime(commands.Cog):
         await ctx.send(f"{ctx.author.mention} you are now tracking {animeInfo[0]['title']['userPreferred']}")
 
         
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.cooldown(1, 15, commands.BucketType.user)
     @anime.command(name="list", aliases=["l"], case_insensitive=True)
     @checks.registered()
     async def list(self, ctx):
         """Lists your tracked anime"""
         authorid = ctx.message.author.id
-        anime = self.bot.mongo.getField(authorid, "anime")['anime']
-        em = discord.Embed(title = "Tracked anime", description = "Anime you're tracking. Type an Anime's ID to untrack it, or 0 to quit")
+        anime = self.bot.mongo.getField(authorid, "anime")
+        if anime == {}:
+            await ctx.send(f"{ctx.author.mention} you are not tracking any anime.")
+            return
+        anime = anime['anime']
+        em = discord.Embed(title = "Tracked anime", description = "Anime you're tracking. Type an untrack (Anime ID) to untrack it")
 
         def check(msg):
             return msg.author.id == ctx.message.author.id and msg.channel == ctx.message.channel
@@ -218,45 +221,104 @@ class Anime(commands.Cog):
             embedAnime += f'({key}) {value}' + "\n"
         em.add_field(name = 'Tracked anime', value = embedAnime, inline=True)
         await ctx.send(embed = em)
-        msg = await self.bot.wait_for('message', check=check, timeout=30)
-        if re.match('^[0-9]*$', msg.content) is None:
-            await ctx.send(f"{ctx.author.mention} enter a valid id")
-            return
+        msg = await self.bot.wait_for('message', check=check, timeout=15)
+        if re.match('^untrack [0-9]+$', msg.content) is not None:
+            choice = msg.content.split(" ")[1]
 
-        elif int(msg.content) == 0:
-            return
-
-        else:
-            choice = msg.content
             if choice in anime:
                 self.bot.mongo.deleteField(authorid, f"anime.{choice}")
+                animeList = self.bot.mongo.getAnime(choice)
+                del animeList['users'][str(authorid)]
+                self.bot.mongo.setAnime(choice, animeList)
+                await ctx.send(f"{ctx.author.mention} removed {anime[choice]} from your tracking list.")
+
             else:
                 await ctx.send(f"{ctx.author.mention} enter a valid id")
-                return
+
 
 
 
         #remove user from alert list
-        animeList = self.bot.mongo.getAnime(choice)
-        print(animeList)
-        del animeList['users'][str(authorid)]
-        print(animeList)
-        self.bot.mongo.setAnime(choice, animeList)
-        await ctx.send(f"{ctx.author.mention} removed {anime[choice]} from your tracking list.")
         
-    dt = time(hour=6, minute=47, second = 0)
     #dt = time(hour=17, minute=0, second = 0, tzinfo = timezone("US/Eastern"))
     
     #Doesn't account for daylight savings, UTC
-    @tasks.loop(time=time(hour=9, minute=0, second = 0))
+    @tasks.loop(time=time(hour=17, minute=0, second = 0, tzinfo=ZoneInfo('US/Eastern')))
     async def animeAlert(self):
         #hard coded channel id cause bot only runs in one server
         channelID = 851281506637709342
+        channelID = 999435543962189964
         #TODO: Handle updating when an end date gets added to an anime some how, possibly just requery server and see if there's an update?
         channel = self.bot.get_channel(channelID)
         await channel.send("Anime time onii-chans ( ˶ˆ꒳ˆ˵ ). Looking up what's airing today! ヾ( ˃ᴗ˂ )◞ • *✰")
-        day = datetime.now(timezone("US/Eastern")).strftime('%A')
-        cursor = self.bot.mongo.getDailyAnime(day)
+        #day = datetime.now(timezone("US/Eastern")).strftime('%A')
+        #cursor = self.bot.mongo.getDailyAnime(day)
+        query = '''
+        query ($start: Int, $end: Int){
+            Page{
+                airingSchedules(sort:TIME, airingAt_lesser: $end, airingAt_greater: $start){
+                    media{
+                        title{
+                            userPreferred
+                        }
+                    }
+                    mediaId
+                }
+            }
+        }
+        '''
+        curTime = datetime.now(timezone("US/Eastern"))
+        epochTime = int(curTime.timestamp())
+        endOfDay = epochTime + ((24 - curTime.hour - 1)*60*60) + ((60 - curTime.minute - 1)*60) + (60 - curTime.second)
+        startOfDay = endOfDay - 86400
+
+        variables = {
+                "end": endOfDay,
+                "start": startOfDay
+                }
+
+        url = 'https://graphql.anilist.co'
+        response = requests.post(url, json={'query': query, 'variables': variables})
+        todaysAnime = response.json()['data']['Page']['airingSchedules']
+
+        airingAnimeIDs = {}
+        for anime in todaysAnime:
+            airingAnimeIDs[str(anime['mediaId'])] = anime['media']['title']
+
+        cursor = self.bot.mongo.anime.find({})
+        trackedAnime = list(cursor)
+        animeIDs = {}
+        animeTime = False
+        print(airingAnimeIDs)
+        print(trackedAnime)
+        for anime in trackedAnime:
+            userIDs = ""
+            if anime['animeID'] in airingAnimeIDs:
+                for userID in anime['users'].keys():
+                    userIDs += f"<@{userID}> "
+                if userIDs != "":
+                    animeTime = True
+                    await channel.send(userIDs + f"{anime['title']} comes out today! o(≧∇≦o)")
+            if anime['lastEpisode'] is not None and anime['lastEpisode'].date() <= datetime.today().date():
+                #delete this track from stuff, should be last episode or somehow got past the date
+                animeID = anime['animeID']
+                print(anime)
+                for userID in anime['users'].keys():
+                    self.bot.mongo.deleteField(int(userID), f"anime.{animeID}")
+                    userIDs += f"<@{userID}> "
+                self.bot.mongo.deleteAnime(animeID)
+            #TODO: if end date is none, check if there's a end date, and update
+
+
+        if not animeTime:
+            await channel.send("No anime today onii-chans‧º·(˚ ˃̣̣̥⌓˂̣̣̥ )‧º·˚")
+
+
+
+
+
+        
+        '''
         docList = list(cursor)
         if len(docList) == 0:
             await channel.send("No anime today onii-chans‧º·(˚ ˃̣̣̥⌓˂̣̣̥ )‧º·˚")
@@ -277,6 +339,7 @@ class Anime(commands.Cog):
                 if userIDs != "":
                     await channel.send(userIDs + f"{doc['title']} comes out today! o(≧∇≦o)")
      
+     '''
 
 
 
