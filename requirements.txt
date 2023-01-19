@@ -5,3 +5,4 @@ yfinance==0.1.62
 git+https://github.com/Rapptz/discord.py
 pynacl
 backports-zoneinfo
+flask

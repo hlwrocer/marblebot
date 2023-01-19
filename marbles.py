@@ -10,6 +10,7 @@ import traceback
 
 from discord.ext import commands
 from helpers import util, checks
+import web
 
 
 owner_id = owner_id = 125828772363632640
@@ -63,6 +64,7 @@ async def main():
     async with bot:
         await bot.start(TOKEN)
 
+web.serve()
 asyncio.run(main())
 
 
