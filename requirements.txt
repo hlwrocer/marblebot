@@ -4,5 +4,5 @@ dnspython
 yfinance==0.1.62
 git+https://github.com/Rapptz/discord.py
 pynacl
-backports-zoneinfo
+backports-zoneinfo;python_version<"3.9"
 flask
